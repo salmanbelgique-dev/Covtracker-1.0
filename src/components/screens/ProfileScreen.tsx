@@ -27,6 +27,7 @@ import logoRedotpay from "@/assets/logo-redotpay.png";
 import logoMyfin from "@/assets/logo-myfin.png";
 import logoKrak from "@/assets/logo-krak.png";
 import { useTheme } from "@/hooks/useTheme";
+import { useSubscriptions } from "@/hooks/useSubscriptions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -139,6 +140,7 @@ async function processProfileImageFile(file: File): Promise<string> {
 }
 
 const ProfileScreen = () => {
+  const { clearSubscriptions, subscriptions: allSubscriptions } = useSubscriptions();
   const [showAbout, setShowAbout] = useState(false);
   const [subView, setSubView] = useState<ProfileSubView>("main");
   const [accountEmail, setAccountEmail] = useState(() => localStorage.getItem(EMAIL_STORAGE_KEY) ?? DEFAULT_EMAIL);
@@ -204,10 +206,8 @@ const ProfileScreen = () => {
 
   const showLogoUpload = newCardName.trim().length > 0 && !SUGGESTED_CARDS.some(c => c.name.toLowerCase() === newCardName.trim().toLowerCase());
 
-  // Load subscriptions to show recent transactions per card
-  const allSubscriptions: Array<{id:string;name:string;cost:number;renewalDate:string;paymentMethod:string;logo?:string;color?:string}> = (() => {
-    try { return JSON.parse(localStorage.getItem('subscriptions') ?? '[]'); } catch { return []; }
-  })();
+  // Remove manual parsing since we use the hook now
+  // const allSubscriptions = ...
 
   const { theme, setTheme } = useTheme();
 
@@ -869,6 +869,18 @@ const ProfileScreen = () => {
           <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
         </button>
       </div>
+
+      <button
+        onClick={() => {
+          if (confirm("Are you sure you want to delete all transactions?")) {
+            clearSubscriptions();
+            toast.success("All transactions deleted");
+          }
+        }}
+        className="w-full border border-red-500/50 rounded-xl py-3.5 text-sm font-medium text-red-500 hover:bg-red-500/10 transition-colors mb-2"
+      >
+        Delete All Data
+      </button>
 
       <button className="w-full border border-border rounded-xl py-3.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
         Logout

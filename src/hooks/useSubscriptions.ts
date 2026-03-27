@@ -36,10 +36,16 @@ export function useSubscriptions() {
     setSubscriptions((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const clearSubscriptions = () => {
+    setSubscriptions([]);
+  };
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+
   const totalMonthly = subscriptions.reduce((sum, s) => {
-    if (s.frequency === "free_trial") return sum;
-    const cost = Number(s.cost) || 0;
-    return sum + (s.frequency === "annually" ? cost / 12 : cost);
+    const cost = parseFloat(String(s.cost)) || 0;
+    return sum + cost;
   }, 0);
 
   const transactions: Transaction[] = [...subscriptions]
@@ -56,14 +62,13 @@ export function useSubscriptions() {
       logo: s.logo,
     }));
 
-  const now = new Date();
   const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  const currentMonthIdx = now.getMonth();
+  const currentMonthIdx = currentMonth;
   const monthlyData = Array.from({ length: 6 }, (_, i) => {
     const mIdx = (currentMonthIdx - 5 + i + 12) % 12;
     const isCurrentMonth = i === 5;
     return { month: monthNames[mIdx], amount: isCurrentMonth ? totalMonthly : 0 };
   });
 
-  return { subscriptions, addSubscription, removeSubscription, totalMonthly, transactions, monthlyData };
+  return { subscriptions, addSubscription, removeSubscription, clearSubscriptions, totalMonthly, transactions, monthlyData };
 }

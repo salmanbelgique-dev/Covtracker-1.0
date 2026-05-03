@@ -1,15 +1,55 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Search, ArrowUpRight } from "lucide-react";
+import { motion, useMotionValue, useTransform } from "framer-motion";
+import { Search, ArrowUpRight, Trash2 } from "lucide-react";
 import { Transaction } from "@/types/subscription";
 import SubscriptionLogo from "@/components/SubscriptionLogo";
+
+const TransactionItem = ({ t, onDelete }: { t: Transaction; onDelete: (id: string) => void }) => {
+  const x = useMotionValue(0);
+  const opacity = useTransform(x, [0, -50], [0, 1]);
+  const scale = useTransform(x, [0, -50], [0.5, 1]);
+
+  return (
+    <div className="relative rounded-2xl bg-transparent">
+      {/* Background Actions */}
+      <div className="absolute inset-0 flex items-center justify-end pr-4 rounded-2xl z-0 pointer-events-none">
+        <motion.button 
+          style={{ opacity, scale }}
+          className="w-10 h-10 rounded-full bg-destructive flex items-center justify-center text-destructive-foreground pointer-events-auto cursor-pointer border-none outline-none"
+          onClick={() => onDelete(t.id)}
+        >
+          <Trash2 size={20} />
+        </motion.button>
+      </div>
+      
+      {/* Foreground Content */}
+      <motion.div
+        style={{ x }}
+        drag="x"
+        dragConstraints={{ left: -80, right: 0 }}
+        dragElastic={0.1}
+        className="glass-card px-4 py-3 flex items-center justify-between relative z-10"
+      >
+        <div className="flex items-center gap-3">
+          <SubscriptionLogo name={t.subscriptionName} logo={t.logo} color={t.color} />
+          <div>
+            <p className="text-sm font-medium text-foreground">{t.subscriptionName}</p>
+            <p className="text-xs text-muted-foreground">{t.date}</p>
+          </div>
+        </div>
+        <p className="text-sm font-semibold text-foreground">${t.amount.toFixed(2)}</p>
+      </motion.div>
+    </div>
+  );
+};
 
 interface Props {
   transactions: Transaction[];
   totalMonthly: number;
+  onDelete: (id: string) => void;
 }
 
-const TransactionsScreen = ({ transactions, totalMonthly }: Props) => {
+const TransactionsScreen = ({ transactions, totalMonthly, onDelete }: Props) => {
   const [search, setSearch] = useState("");
 
   const filtered = transactions.filter((t) =>
@@ -78,19 +118,7 @@ const TransactionsScreen = ({ transactions, totalMonthly }: Props) => {
               <h3 className="text-xs font-semibold text-muted-foreground uppercase pl-1">{group.title}</h3>
               <div className="space-y-2">
                 {group.items.map((t) => (
-                  <div
-                    key={t.id}
-                    className="glass-card px-4 py-3 flex items-center justify-between"
-                  >
-                    <div className="flex items-center gap-3">
-                      <SubscriptionLogo name={t.subscriptionName} logo={t.logo} color={t.color} />
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{t.subscriptionName}</p>
-                        <p className="text-xs text-muted-foreground">{t.date}</p>
-                      </div>
-                    </div>
-                    <p className="text-sm font-semibold text-foreground">${t.amount.toFixed(2)}</p>
-                  </div>
+                  <TransactionItem key={t.id} t={t} onDelete={onDelete} />
                 ))}
               </div>
             </div>

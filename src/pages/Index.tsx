@@ -9,7 +9,7 @@ import { AnimatePresence } from "framer-motion";
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState("summary");
-  const { subscriptions, addSubscription, totalMonthly, transactions, monthlyData } =
+  const { subscriptions, addSubscription, removeSubscription, totalMonthly, transactions, monthlyData } =
     useSubscriptions();
 
   return (
@@ -42,6 +42,7 @@ const Index = () => {
             key="transactions"
             transactions={transactions}
             totalMonthly={totalMonthly}
+            onDelete={removeSubscription}
           />
         )}
         {activeTab === "profile" && <ProfileScreen key="profile" />}
